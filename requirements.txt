@@ -1,0 +1,10 @@
+torch
+torchvision
+scikit-learn
+pandas
+matplotlib
+tqdm
+streamlit
+altair
+tabulate
+pyarrow
