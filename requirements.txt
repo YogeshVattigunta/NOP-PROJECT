@@ -1,8 +1,8 @@
-streamlit==1.32.0
-altair==4.2.2
+streamlit
+altair
 pandas
 numpy
 scikit-learn
 matplotlib
-torch==2.2.2
+torch --index-url https://download.pytorch.org/whl/cpu
 pyarrow
