@@ -63,6 +63,7 @@ imbalanced data.
 | V. Yogesh | 23BTRCL236 |
 | Sujeet R.K. | 23BTRCL081 |
 | Varish Gada | 23BTRCL121 |
+| T M Harikrishna | 23BTRCL085 |
 
 **Professor:** Dr. Sujeet S. Jagtap
 **Institution:** JAIN (Deemed-to-be University), Bangalore
