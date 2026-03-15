@@ -1,8 +1,9 @@
 streamlit
-altair
-pandas
-numpy
-scikit-learn
-matplotlib
 torch --index-url https://download.pytorch.org/whl/cpu
+numpy
+pandas
+scikit-learn
+joblib
+matplotlib
+altair
 pyarrow
