@@ -189,9 +189,9 @@ def main():
     with rank_col2:
         st.dataframe(
             df_results.style.apply(
-                lambda x: ['background-color: #1a472a' 
+                lambda x: ['background-color: #1a472a'] * len(x) 
                            if x['Optimizer'] == 'VarianceRMSProp' 
-                           else '' for _, x in df_results.iterrows()],
+                           else [''] * len(x),
                 axis=1
             ), use_container_width=True
         )
