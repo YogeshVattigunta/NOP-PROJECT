@@ -318,9 +318,9 @@ def main():
         st.subheader("Convergence Speed Comparison")
         conv_chart = alt.Chart(df_results).mark_bar().encode(
             x='Optimizer:N',
-            y='ConvergenceSpeed:Q',
+            y='Convergence Speed:Q',
             color='Optimizer:N',
-            tooltip=['Optimizer', 'ConvergenceSpeed']
+            tooltip=['Optimizer', 'Convergence Speed']
         ).interactive().properties(height=350)
         st.altair_chart(conv_chart, use_container_width=True)
         st.caption("Lower convergence speed value = faster convergence")
