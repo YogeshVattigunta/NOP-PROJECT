@@ -8,9 +8,38 @@ import sys
 import numpy as np
 
 import joblib
-# Ensure models module can be loaded from parent directory
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from models.fraud_net import FraudDetectionNet
+import json
+
+class FraudDetectionNet(nn.Module):
+    def __init__(self, input_dim=10):
+        super().__init__()
+        self.network = nn.Sequential(
+            nn.Linear(input_dim, 128),
+            nn.ReLU(),
+            nn.Dropout(0.3),
+            nn.Linear(128, 64),
+            nn.ReLU(),
+            nn.Dropout(0.2),
+            nn.Linear(64, 32),
+            nn.ReLU(),
+            nn.Linear(32, 1)
+        )
+    def forward(self, x):
+        return self.network(x)
+
+    def predict_proba(self, x):
+        return torch.sigmoid(self.forward(x))
+
+@st.cache_resource
+def load_fraud_model():
+    m = FraudDetectionNet(input_dim=10)
+    m.load_state_dict(torch.load('variance_rmsprop_model.pth', map_location='cpu'))
+    m.eval()
+    return m
+
+@st.cache_resource
+def load_scaler():
+    return joblib.load('scaler.pkl')
 
 def main():
     # Configuration
@@ -67,18 +96,6 @@ def main():
 
     st.divider()
 
-    @st.cache_resource
-    def load_model_and_scaler():
-        try:
-            model = FraudDetectionNet(input_dim=10)
-            model.load_state_dict(torch.load('variance_rmsprop_model.pth', map_location='cpu'))
-            model.eval()
-            scaler = joblib.load('data/scaler.pkl')
-            return model, scaler
-        except Exception as e:
-            st.error(f"Error loading model/scaler: {e}. Please ensure training is complete.")
-            return None, None
-
     @st.cache_data
     def load_results():
         try:
@@ -87,7 +104,6 @@ def main():
         except:
             return None
 
-    model, scaler = load_model_and_scaler()
     results = load_results()
 
     def get_optimizer_results(results):
@@ -294,35 +310,36 @@ def main():
 
     st.divider()
 
-    # SECTION 6 - FRAUD PREDICTION SIMULATOR
     st.header("6. Interactive Fraud Prediction Simulator")
-    st.markdown("Enter TalkingData transaction features to test the VarianceRMSProp-trained model.")
+    st.write("Enter TalkingData transaction features to test the VarianceRMSProp-trained model.")
 
-    feature_labels = ["ip", "app", "device", "os", "channel", "click_hour", 
-                      "click_day", "click_dayofweek", "ip_count", "app_channel_count"]
-    features = []
-    grid_cols = st.columns(5)
-    for i in range(10):
-        with grid_cols[i % 5]:
-            val = st.number_input(feature_labels[i], value=0.0, step=0.1, key=f"feat_{i}")
-            features.append(val)
+    fraud_model = load_fraud_model()
+    feat_scaler = load_scaler()
+
+    feature_names = ['ip', 'app', 'device', 'os', 'channel',
+                     'click_hour', 'click_day', 'click_dayofweek',
+                     'ip_count', 'app_channel_count']
+
+    cols = st.columns(5)
+    inputs = {}
+    for i, feat in enumerate(feature_names):
+        with cols[i % 5]:
+            inputs[feat] = st.number_input(feat, value=0.0,
+                                           step=0.1, key=feat)
 
     if st.button("Predict"):
-        if model is not None and scaler is not None:
-            input_array = np.array([features])
-            scaled = scaler.transform(input_array)
-            tensor = torch.FloatTensor(scaled)
-            with torch.no_grad():
-                prob = model(tensor).item()
-            
-            st.markdown(f"### Fraud Probability: {prob:.4f}")
-            st.progress(prob)
-            if prob > 0.5:
-                st.error("Prediction: FRAUD")
-            else:
-                st.success("Prediction: NORMAL")
+        input_array = np.array([[inputs[f] for f in feature_names]])
+        scaled = feat_scaler.transform(input_array)
+        tensor = torch.FloatTensor(scaled)
+        with torch.no_grad():
+            prob = fraud_model.predict_proba(tensor).item()
+
+        st.markdown(f"### Fraud Probability: {prob:.4f}")
+        st.progress(min(prob, 1.0))
+        if prob > 0.5:
+            st.error("Prediction: FRAUD")
         else:
-            st.warning("Model and Scaler not loaded. Please wait for training to finish.")
+            st.success("Prediction: NORMAL")
 
     st.divider()
 
