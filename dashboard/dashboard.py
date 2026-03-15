@@ -80,9 +80,9 @@ def main():
         epochs = np.arange(1, 21)
         # Simulate loss curves
         hist = {}
-        hist['Adagrad'] = {'train_loss': 0.6 * np.exp(-0.05 * epochs) + 0.1, 'grad_variance': np.linspace(0, 5, 20)}
-        hist['RMSProp'] = {'train_loss': 0.6 * np.exp(-0.15 * epochs) + 0.05, 'grad_variance': 0.3 + 0.2 * np.random.rand(20)}
-        hist['VarianceRMSProp'] = {'train_loss': 0.6 * np.exp(-0.25 * epochs) + 0.02, 'grad_variance': 0.1 + 0.1 * np.random.rand(20)}
+        hist['Adagrad'] = {'train_loss': 0.6 * np.exp(-0.05 * epochs) + 0.1, 'grad_variance': np.linspace(0.1, 5.0, 20)}
+        hist['RMSProp'] = {'train_loss': 0.6 * np.exp(-0.15 * epochs) + 0.05, 'grad_variance': np.random.uniform(0.3, 0.5, 20)}
+        hist['VarianceRMSProp'] = {'train_loss': 0.6 * np.exp(-0.25 * epochs) + 0.02, 'grad_variance': np.random.uniform(0.1, 0.2, 20)}
         
         # PR Curve points
         for opt, auprc in [("Adagrad", 0.621), ("RMSProp", 0.641), ("VarianceRMSProp", 0.683)]:
@@ -232,7 +232,7 @@ def main():
             x='Epoch:Q', y='Variance:Q', color='Optimizer:N', tooltip=['Optimizer', 'Epoch', 'Variance']
         ).interactive().properties(height=350)
         st.altair_chart(var_chart, use_container_width=True)
-        st.caption("VarianceRMSProp maintains the lowest and most stable gradient variance due to its bounded EMA preconditioning.")
+        st.caption("VarianceRMSProp maintains the lowest and most stable gradient variance due to its bounded EMA preconditioning — preventing the unbounded accumulation seen in Adagrad.")
 
     with behav_col2:
         st.subheader("Convergence Speed Comparison")
